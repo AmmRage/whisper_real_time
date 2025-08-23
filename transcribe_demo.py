@@ -15,7 +15,7 @@ from sys import platform
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="base", help="Model to use",
+    parser.add_argument("--model", default="medium", help="Model to use",
                         choices=["tiny", "base", "small", "medium", "large"])
     parser.add_argument("--non_english", action='store_true',
                         help="Don't use the english model.")
@@ -63,8 +63,8 @@ def main():
 
     # Load / Download model
     model = args.model
-    if args.model != "large" and not args.non_english:
-        model = model + ".en"
+    # if args.model != "large" and not args.non_english:
+    #     model = model + ".en"
     audio_model = whisper.load_model(model)
 
     record_timeout = args.record_timeout
