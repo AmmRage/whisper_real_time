@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Button, Card, Typography, Alert, Progress, message } from 'antd';
+import React, {useState, useRef, useEffect} from 'react';
+import {Button, Card, Typography, Alert, Progress, message} from 'antd';
 
-const { Title, Text } = Typography;
+const {Title, Text} = Typography;
 
 const DeepSeekAudioWorkletRecorder = () => {
     const [isRecording, setIsRecording] = useState(false);
@@ -10,6 +10,8 @@ const DeepSeekAudioWorkletRecorder = () => {
     const [volume, setVolume] = useState(0);
     const [error, setError] = useState(null);
     const [sampleRate, setSampleRate] = useState(0);
+
+    const [recordedTime, setRecordedTime] = useState("");
 
     const audioContextRef = useRef(null);
     const workletNodeRef = useRef(null);
@@ -25,7 +27,7 @@ const DeepSeekAudioWorkletRecorder = () => {
       constructor() {
         super();
         this.batchBuffer = [];
-        this.batchSize = 256;
+        this.batchSize = 8;
         this.batchCount = 0;
         this.lastVolumeUpdate = 0;
         this.volumeUpdateInterval = 10;
@@ -158,14 +160,18 @@ const DeepSeekAudioWorkletRecorder = () => {
     };
 
     // 发送WAV文件到后端
-    const sendWavToBackend = async (wavBuffer, filename = 'recording.wav') => {
+    const sendAudioDataToBackend = async (wavBuffer, sampleRate, filename = 'recording.wav') => {
         try {
-            const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+            const blob = new Blob([wavBuffer], {type: 'audio/wav'});
             const formData = new FormData();
             formData.append('audio', blob, filename);
+            //
+            // formData.append('sampleRate', sampleRate.toString());
+            // formData.append('timestamp', Date.now().toString());
+            // formData.append('format', 'pcm');
 
             // 这里替换为您的后端API地址
-            const response = await fetch('http://127.0.0.1:8000/asr4', {
+            const response = await fetch('http://127.0.0.1:8000/asr3', {
                 method: 'POST',
                 body: formData,
             });
@@ -185,10 +191,9 @@ const DeepSeekAudioWorkletRecorder = () => {
         }
     };
 
-
     // 下载WAV文件（用于测试）
     const downloadWav = (wavBuffer, filename = 'recording.wav') => {
-        const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+        const blob = new Blob([wavBuffer], {type: 'audio/wav'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -208,12 +213,13 @@ const DeepSeekAudioWorkletRecorder = () => {
 
         try {
             message.loading('正在生成WAV文件...', 0);
-
+            console.log('总样本数:', audioDataRef.current.length);
+            console.log('采样率:', sampleRate);
             // 生成WAV文件
             const wavBuffer = convertToWav(audioDataRef.current, sampleRate);
 
             // 发送到后端
-            await sendWavToBackend(wavBuffer, `recording_${Date.now()}.wav`);
+            await sendAudioDataToBackend(wavBuffer, sampleRate, `recording_${Date.now()}.wav`);
 
             // 也可以本地下载（测试用）
             // downloadWav(wavBuffer, `recording_${Date.now()}.wav`);
@@ -234,11 +240,11 @@ const DeepSeekAudioWorkletRecorder = () => {
             audioContextRef.current = new AudioContext();
             setSampleRate(audioContextRef.current.sampleRate);
 
-            const blob = new Blob([workletProcessorCode], { type: 'application/javascript' });
+            const blob = new Blob([workletProcessorCode], {type: 'application/javascript'});
             const url = URL.createObjectURL(blob);
             await audioContextRef.current.audioWorklet.addModule(url);
 
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
             const source = audioContextRef.current.createMediaStreamSource(stream);
 
             workletNodeRef.current = new AudioWorkletNode(audioContextRef.current, 'pcm-processor');
@@ -250,17 +256,25 @@ const DeepSeekAudioWorkletRecorder = () => {
                     // console.log("类型：", typeof data.data);
                     console.log("采样率：", data.sampleRate);
 
-                    // 生成WAV文件 // 发送到后端
+                    //
+                    const recordedSeconds = data.data.length / data.sampleRate;
+                    const minutes = Math.floor(recordedSeconds / 60);
+                    const remainingSeconds = (recordedSeconds % 60).toFixed(2);
+
+                    setRecordedTime(`${minutes}:${remainingSeconds.padStart(5, '0')}`);
+                    //
+                    // // 生成WAV文件 // 发送到后端
                     // const wavBuffer = convertToWav(data.data, data.sampleRate);
-                    // await sendWavToBackend(wavBuffer, `recording_${Date.now()}.wav`);
+                    // await sendAudioDataToBackend(wavBuffer, data.sampleRate, `recording_${Date.now()}.wav`);
 
                     // 纯 pcm 数据
-                    const pcmBuffer = getPurePcm(data.data);
-                    await sendWavToBackend(pcmBuffer, `recording_${Date.now()}.pcm`);
+                    // const pcmBuffer = getPurePcm(data.data);
+                    // await sendAudioDataToBackend(pcmBuffer, data.sampleRate, `recording_${Date.now()}.pcm`);
+
 
                     // 更新ref和state
-                    // audioDataRef.current = [...audioDataRef.current, ...data.data];
-                    // setAudioData(prev => [...prev, ...data.data]);
+                    audioDataRef.current = [...audioDataRef.current, ...data.data];
+                    setAudioData(prev => [...prev, ...data.data]);
                 } else if (data.type === 'volume') {
                     setVolume(data.volume);
                 }
@@ -327,13 +341,13 @@ const DeepSeekAudioWorkletRecorder = () => {
     }, []);
 
     return (
-        <div style={{ maxWidth: 800, margin: '0 auto', padding: 24 }}>
+        <div style={{maxWidth: 800, margin: '0 auto', padding: 24}}>
             <Title level={2}>AudioWorklet WAV录音器</Title>
 
-            <Card style={{ marginBottom: 24 }}>
+            <Card style={{marginBottom: 24}}>
                 {/* ... UI代码保持不变 ... */}
 
-                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <div style={{display: 'flex', gap: 8, marginBottom: 16}}>
                     <Button
                         type="primary"
                         onClick={startRecording}
@@ -360,15 +374,19 @@ const DeepSeekAudioWorkletRecorder = () => {
                 </div>
 
                 {error && (
-                    <Alert message="错误" description={error} type="error" showIcon />
+                    <Alert message="错误" description={error} type="error" showIcon/>
                 )}
             </Card>
 
             <Card title="录音数据">
                 <Text>已收集 {audioData.length} 个样本</Text>
+                <br />
+                <Text>采样率: {sampleRate} Hz</Text>
+                <br />
+                <Text strong>录制时长: {recordedTime}</Text>
 
                 {audioData.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
+                    <div style={{marginTop: 16}}>
                         <Text strong>前10个样本: </Text>
                         <div style={{
                             background: '#f0f0f0',
@@ -379,7 +397,7 @@ const DeepSeekAudioWorkletRecorder = () => {
                             overflow: 'auto'
                         }}>
                             {audioData.slice(0, 10).map((value, index) => (
-                                <span key={index} style={{ marginRight: 8 }}>
+                                <span key={index} style={{marginRight: 8}}>
                   {value.toFixed(6)}
                 </span>
                             ))}

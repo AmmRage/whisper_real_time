@@ -3,6 +3,10 @@ import os
 import shutil
 from pydub import AudioSegment
 from fastapi import FastAPI, UploadFile, Depends, HTTPException, File
+import numpy as np
+import librosa
+from scipy.signal import resample_poly
+
 
 def save_and_convert_to_wave(audio: UploadFile):
     # 将上传的文件保存到临时目录
@@ -31,3 +35,19 @@ def convert_to_wave(temp_file_name: str):
 
 
     return temp_wav_path
+
+
+def resample_audio_float32(audio: np.ndarray, sr_in: int, sr_out: int = 16000) -> np.ndarray:
+    """
+    使用 scipy.signal.resample_poly 重采样到 16kHz，保持 float32 [-1, 1].
+    """
+    if audio.dtype != np.float32:
+        audio = audio.astype(np.float32)
+
+    # 计算上采样/下采样比率
+    gcd = np.gcd(sr_in, sr_out)
+    up = sr_out // gcd
+    down = sr_in // gcd
+
+    y = resample_poly(audio, up, down).astype(np.float32)
+    return y

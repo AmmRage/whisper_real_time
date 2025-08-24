@@ -6,11 +6,11 @@ from typing import Union
 import numpy as np
 import whisper
 # from faster_whisper import WhisperModel
-from fastapi import FastAPI, UploadFile, Depends, HTTPException, File
+from fastapi import FastAPI, UploadFile, Depends, HTTPException, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment
-
-from audio_helper import save_and_convert_to_wave
+import torch
+from audio_helper import save_and_convert_to_wave, resample_audio_float32
 import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -39,6 +39,11 @@ app.add_middleware(
     allow_methods=["*"],         # 允许所有方法
     allow_headers=["*"],         # 允许所有请求头
 )
+
+#
+
+enable_fp16 = torch.cuda.is_available()  # 如果有GPU就用fp16
+
 
 @app.get("/")
 def read_root():
@@ -128,7 +133,7 @@ async def asr_endpoint(audio: UploadFile = File(...)):
 @app.post("/asr3")
 async def asr_endpoint(audio: UploadFile = File(...)):
     """
-    接收 wav 音频文件并使用 Whisper 进行语音转文字。
+    接收带有header的 wav 音频文件并使用 Whisper 进行语音转文字。
     """
     print(f"Received audio file type: {audio.content_type}")
     temp_date_time_name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -137,11 +142,18 @@ async def asr_endpoint(audio: UploadFile = File(...)):
     with open(temp_file_path, "wb") as buffer:
         shutil.copyfileobj(audio.file, buffer)
 
+    # 使用 Whisper 转录音频文件， 返回转录结果
+    # result = whisper_model.transcribe(temp_file_path, fp16=enable_fp16) # fp16=False 适用于没有GPU的情况
+    # return {"transcription": result["text"]}
+
     # 返回转录结果
     return {"success": True}
 
 @app.post("/asr4")
-async def asr_endpoint(audio: UploadFile = File(...)):
+async def asr_endpoint(audio: UploadFile = File(...),
+    sampleRate: str = Form(None),
+    timestamp: str = Form(None),
+    format: str = Form(None)):
     """
     接收纯AudioWorklet的纯 pcm数据，
     在AudioWorklet里是float32，归一化的，所以i可以给whisper直接用
@@ -149,11 +161,21 @@ async def asr_endpoint(audio: UploadFile = File(...)):
     try:
         audio_content = await audio.read()
         print(f"Received audio file length: {len(audio_content)} bytes")
+        print(f"Sample rate: {sampleRate}")
+        print(f"Timestamp: {timestamp}")
+        print(f"Format: {format}")
 
+        # 直接把音频内容转成numpy数组
         audio_np = np.frombuffer(audio_content, dtype=np.float32)
+        print(f"Audio numpy array shape: {audio_np.shape}, dtype: {audio_np.dtype}")
+        resampled_data_np = resample_audio_float32(audio_np, sr_in=int(sampleRate), sr_out=16000)
+
+        print(f"Resampled audio length: {len(resampled_data_np)} samples")
+
         # 使用 Whisper 转录音频文件， 返回转录结果
-        result = whisper_model.transcribe(audio_np) # fp16=False 适用于没有GPU的情况
+        result = whisper_model.transcribe(resampled_data_np, fp16=enable_fp16) # fp16=False 适用于没有GPU的情况
         return {"transcription": result["text"]}
+
         return {"success": True}
     except Exception as e:
         # 如果发生任何错误，返回错误信息
