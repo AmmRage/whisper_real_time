@@ -14,12 +14,6 @@ importers:
       antd:
         specifier: ^5.27.0
         version: 5.27.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      extendable-media-recorder:
-        specifier: ^9.2.29
-        version: 9.2.29
-      extendable-media-recorder-wav-encoder:
-        specifier: ^7.0.131
-        version: 7.0.131
       react:
         specifier: ^19.1.1
         version: 19.1.1
@@ -54,9 +48,6 @@ importers:
       globals:
         specifier: ^16.3.0
         version: 16.3.0
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.2
       vite:
         specifier: ^7.1.2
         version: 7.1.3(@types/node@24.3.0)
@@ -648,18 +639,11 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  automation-events@7.1.12:
-    resolution: {integrity: sha512-JDdPQoV58WPm15/L3ABtIEiqyxLoW+yTYIEqYtrKZ7VizLSRXhMKRZbQ8CYc2mFq/lMRKUvqOj0OcT3zANFiXA==}
-    engines: {node: '>=18.2.0'}
-
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
   brace-expansion@1.1.12:
     resolution: {integrity: sha512-9T9UjW3r0UW5c1Q7GTwllptXwhvYmEzFhzMfZ9H7FQWt+uZePjZPjBP/W1ZEyZ1twGWom5/56TF4lPcqjnDHcg==}
-
-  broker-factory@3.1.9:
-    resolution: {integrity: sha512-MzvndyD6EcbkBtX4NXm/HfdO1+cOR5ONNdMCXEKfHpxGdMtuDz7+o+nJf7HMtyPH1sUVf/lEIP+DMluC5PgaBQ==}
 
   browserslist@4.25.3:
     resolution: {integrity: sha512-cDGv1kkDI4/0e5yON9yM5G/0A5u8sf5TnmdX5C9qHzI9PPu++sQ9zjm1k9NiOrf3riY4OkK0zSGqfvJyJsgCBQ==}
@@ -790,18 +774,6 @@ packages:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
 
-  extendable-media-recorder-wav-encoder-broker@7.0.121:
-    resolution: {integrity: sha512-pRRKLXKhkveeU9DiSqF/fA9dDBnMuf3Uq1jz8cpAvik8IclVqY1Wju6n74KEYrvitPJr8W+5st76G7AyI3EA9A==}
-
-  extendable-media-recorder-wav-encoder-worker@8.0.118:
-    resolution: {integrity: sha512-yCZcXI2k3OorlB7ShyLsr0SgZ436doqjfAh9RlJhdwGK/LnCDvdLG4jktqSp8KY0gYFvB59o7tI3tY69SWDVWA==}
-
-  extendable-media-recorder-wav-encoder@7.0.131:
-    resolution: {integrity: sha512-fupOYvXrbIQhZt714VlLhARkVqjRgMofcaaxJVNG8WtpmresW4dmIEWGEDVNrSkf/8TQlNt2qV/oFlzGeFKioQ==}
-
-  extendable-media-recorder@9.2.29:
-    resolution: {integrity: sha512-0JHseYEzbib8MV1paUmfaQ+5Yf3UgfCXsXUx7s4X+epOCtag3WoBUB8Sglbcs3vSOnnuyV013dL5GcfC/jKEkg==}
-
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -810,10 +782,6 @@ packages:
 
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
-
-  fast-unique-numbers@9.0.23:
-    resolution: {integrity: sha512-jcRIaHo46nfvyvKRMaFSKXmez4jALQ3Qw49gxM5F4siz8HqkyKPPEexpCOYwBSJI1HovrDr4fEedM8QAJ7oX3w==}
-    engines: {node: '>=18.2.0'}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -933,24 +901,11 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  media-encoder-host-broker@8.0.21:
-    resolution: {integrity: sha512-6V4HuTclh7a1Fk3QAeUw3QTM1DOvk6zmPEppmNCDWgkGSWhy/GBu/eVeJc5TKC3BfWPYXx/C9Ufa+54akxtotQ==}
-
-  media-encoder-host-worker@10.0.21:
-    resolution: {integrity: sha512-uwuiY2oOXXrwKV7yq6rBX4Xhi+9ccm0nb3fxVftb+Liv61upuiVHvClSRAwZzkeYbQiZvx7+RrpSl4mbjNNXMA==}
-
-  media-encoder-host@9.0.22:
-    resolution: {integrity: sha512-bP04jb4SiZSSiyI/XvVImb45VVY9v2vf7gP8j37t+B7T5bc/Wcl97r/ktTr6uiCgFw6+u8YgLo2s1sjPqHCfdg==}
-
   minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
-
-  multi-buffer-data-view@6.0.23:
-    resolution: {integrity: sha512-3Gzaez4KQw+5vcUpcfNr25V5+wxm6kxqO3AfFBEjsd9FV9yoXBeJHN45Dy1iSMD7MUBZPi1VErgce0jlKqHaUw==}
-    engines: {node: '>=18.2.0'}
 
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
@@ -1250,12 +1205,6 @@ packages:
     resolution: {integrity: sha512-w8nqGImo45dmMIfljjMwOGtbmC/mk4CMYhWIicdSflH91J9TyCyczcPFXJzrZ/ZXcgGRFeP6BU0BEJTw6tZdfQ==}
     engines: {node: '>=0.10.0'}
 
-  recorder-audio-worklet-processor@5.0.36:
-    resolution: {integrity: sha512-fT9QkiL3Q8rVJ6+T57KyUNYZZu5ea6Y/EgzKbzxizZdGr9JXPQYxbvwQ6hbxFZ5AJOmi7+BGuPyaJlpR8vicxA==}
-
-  recorder-audio-worklet@6.0.50:
-    resolution: {integrity: sha512-BI1H2Ewu3Rryz2b5hMlpSRH8ixuWHOdBXOxAOjZT6D4WkFpllKbphXEfPmFKZK+C6ytKcFG/QTjqNmznmqg3jQ==}
-
   resize-observer-polyfill@1.5.1:
     resolution: {integrity: sha512-LwZrotdHOo12nQuZlHEmtuXdqGoOD0OhaxopaNFxWzInpEgaLWoVuAMbTzixuosCx2nEG58ngzW3vxdWoxIgdg==}
 
@@ -1267,9 +1216,6 @@ packages:
     resolution: {integrity: sha512-RZn2XTjXb8t5g13f5YclGoilU/kwT696DIkY3sywjdZidNSi3+vseaQov7D7BZXVJCPv3pDWUN69C78GGbXsKw==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
-
-  rxjs-interop@2.0.0:
-    resolution: {integrity: sha512-ASEq9atUw7lualXB+knvgtvwkCEvGWV2gDD/8qnASzBkzEARZck9JAyxmY8OS6Nc1pCPEgDTKNcx+YqqYfzArw==}
 
   scheduler@0.26.0:
     resolution: {integrity: sha512-NlHwttCI/l5gCPR3D1nNXtWABUmBwvZpEQiD4IXSbIDq8BzLIK/7Ir5gTFSGZDUu37K5cMNp0hFtzO38sC7gWA==}
@@ -1293,9 +1239,6 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-  standardized-audio-context@25.3.77:
-    resolution: {integrity: sha512-Ki9zNz6pKcC5Pi+QPjPyVsD9GwJIJWgryji0XL9cAJXMGyn+dPOf6Qik1AHei0+UNVcc4BOCa0hWLBzlwqsW/A==}
-
   string-convert@0.2.1:
     resolution: {integrity: sha512-u/1tdPl4yQnPBjnVrmdLo9gtuLvELKsAoRapekWggdiQNvvvum+jYF329d84NAa660KQw7pB2n36KrIKVoXa3A==}
 
@@ -1305,9 +1248,6 @@ packages:
 
   stylis@4.3.6:
     resolution: {integrity: sha512-yQ3rwFWRfwNUY7H5vpU0wfdkNSnvnJinhF9830Swlaxl03zsOjCfmX0ugac+3LtK0lYSgwL/KXc8oYL3mG4YFQ==}
-
-  subscribable-things@2.1.54:
-    resolution: {integrity: sha512-zjnmu4uPrYCCoFMrNK00ytEKfz/hFr01Fvn6RIb8ty8pvhnM+o4CFLyCHt3aMOQShQ72JEtrfFq/+hkZWRos/A==}
 
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
@@ -1324,17 +1264,9 @@ packages:
   toggle-selection@1.0.6:
     resolution: {integrity: sha512-BiZS+C1OS8g/q2RRbJmy59xpyghNBqrr6k5L/uKBGRsTfxmu3ffiRnd8mlGPUVayg8pvfi5urfnu8TU7DVOkLQ==}
 
-  tslib@2.8.1:
-    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
-
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
-
-  typescript@5.9.2:
-    resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
-    engines: {node: '>=14.17'}
-    hasBin: true
 
   undici-types@7.10.0:
     resolution: {integrity: sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag==}
@@ -1396,9 +1328,6 @@ packages:
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
-
-  worker-factory@7.0.45:
-    resolution: {integrity: sha512-FFPCiSv7MD6ZDEfiik/ErM8IrIAWajaXhezLyCo3v0FjhUWud6GXnG2BiTE91jLywXGAVCT8IF48Hhr+D/omMw==}
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
@@ -1993,24 +1922,12 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  automation-events@7.1.12:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      tslib: 2.8.1
-
   balanced-match@1.0.2: {}
 
   brace-expansion@1.1.12:
     dependencies:
       balanced-match: 1.0.2
       concat-map: 0.0.1
-
-  broker-factory@3.1.9:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      fast-unique-numbers: 9.0.23
-      tslib: 2.8.1
-      worker-factory: 7.0.45
 
   browserslist@4.25.3:
     dependencies:
@@ -2172,46 +2089,11 @@ snapshots:
 
   esutils@2.0.3: {}
 
-  extendable-media-recorder-wav-encoder-broker@7.0.121:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      broker-factory: 3.1.9
-      extendable-media-recorder-wav-encoder-worker: 8.0.118
-      tslib: 2.8.1
-
-  extendable-media-recorder-wav-encoder-worker@8.0.118:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      tslib: 2.8.1
-      worker-factory: 7.0.45
-
-  extendable-media-recorder-wav-encoder@7.0.131:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      extendable-media-recorder-wav-encoder-broker: 7.0.121
-      extendable-media-recorder-wav-encoder-worker: 8.0.118
-      tslib: 2.8.1
-
-  extendable-media-recorder@9.2.29:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      media-encoder-host: 9.0.22
-      multi-buffer-data-view: 6.0.23
-      recorder-audio-worklet: 6.0.50
-      standardized-audio-context: 25.3.77
-      subscribable-things: 2.1.54
-      tslib: 2.8.1
-
   fast-deep-equal@3.1.3: {}
 
   fast-json-stable-stringify@2.1.0: {}
 
   fast-levenshtein@2.0.6: {}
-
-  fast-unique-numbers@9.0.23:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      tslib: 2.8.1
 
   fdir@6.5.0(picomatch@4.0.3):
     optionalDependencies:
@@ -2304,38 +2186,11 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  media-encoder-host-broker@8.0.21:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      broker-factory: 3.1.9
-      fast-unique-numbers: 9.0.23
-      media-encoder-host-worker: 10.0.21
-      tslib: 2.8.1
-
-  media-encoder-host-worker@10.0.21:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      extendable-media-recorder-wav-encoder-broker: 7.0.121
-      tslib: 2.8.1
-      worker-factory: 7.0.45
-
-  media-encoder-host@9.0.22:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      media-encoder-host-broker: 8.0.21
-      media-encoder-host-worker: 10.0.21
-      tslib: 2.8.1
-
   minimatch@3.1.2:
     dependencies:
       brace-expansion: 1.1.12
 
   ms@2.1.3: {}
-
-  multi-buffer-data-view@6.0.23:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      tslib: 2.8.1
 
   nanoid@3.3.11: {}
 
@@ -2712,22 +2567,6 @@ snapshots:
 
   react@19.1.1: {}
 
-  recorder-audio-worklet-processor@5.0.36:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      tslib: 2.8.1
-
-  recorder-audio-worklet@6.0.50:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      broker-factory: 3.1.9
-      fast-unique-numbers: 9.0.23
-      recorder-audio-worklet-processor: 5.0.36
-      standardized-audio-context: 25.3.77
-      subscribable-things: 2.1.54
-      tslib: 2.8.1
-      worker-factory: 7.0.45
-
   resize-observer-polyfill@1.5.1: {}
 
   resolve-from@4.0.0: {}
@@ -2758,8 +2597,6 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.46.3
       fsevents: 2.3.3
 
-  rxjs-interop@2.0.0: {}
-
   scheduler@0.26.0: {}
 
   scroll-into-view-if-needed@3.1.0:
@@ -2776,23 +2613,11 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  standardized-audio-context@25.3.77:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      automation-events: 7.1.12
-      tslib: 2.8.1
-
   string-convert@0.2.1: {}
 
   strip-json-comments@3.1.1: {}
 
   stylis@4.3.6: {}
-
-  subscribable-things@2.1.54:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      rxjs-interop: 2.0.0
-      tslib: 2.8.1
 
   supports-color@7.2.0:
     dependencies:
@@ -2807,13 +2632,9 @@ snapshots:
 
   toggle-selection@1.0.6: {}
 
-  tslib@2.8.1: {}
-
   type-check@0.4.0:
     dependencies:
       prelude-ls: 1.2.1
-
-  typescript@5.9.2: {}
 
   undici-types@7.10.0: {}
 
@@ -2844,12 +2665,6 @@ snapshots:
       isexe: 2.0.0
 
   word-wrap@1.2.5: {}
-
-  worker-factory@7.0.45:
-    dependencies:
-      '@babel/runtime': 7.28.3
-      fast-unique-numbers: 9.0.23
-      tslib: 2.8.1
 
   yallist@3.1.1: {}
 
