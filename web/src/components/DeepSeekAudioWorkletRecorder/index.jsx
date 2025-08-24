@@ -25,7 +25,7 @@ const DeepSeekAudioWorkletRecorder = () => {
       constructor() {
         super();
         this.batchBuffer = [];
-        this.batchSize = 8;
+        this.batchSize = 256;
         this.batchCount = 0;
         this.lastVolumeUpdate = 0;
         this.volumeUpdateInterval = 10;
@@ -49,7 +49,7 @@ const DeepSeekAudioWorkletRecorder = () => {
               this.port.postMessage({
                 type: 'audioBatch',
                 data: this.batchBuffer,
-                sampleRate
+                sampleRate: sampleRate // 修复：使用全局sampleRate
               });
               this.batchBuffer = [];
             }
@@ -130,13 +130,26 @@ const DeepSeekAudioWorkletRecorder = () => {
         const data = new Float32Array(audioData);
 
         const wavBuffer = new ArrayBuffer(header.byteLength + data.byteLength);
-        const view = new DataView(wavBuffer);
 
         // 写入文件头
         new Uint8Array(wavBuffer, 0, header.byteLength).set(new Uint8Array(header));
 
         // 写入音频数据
         const dataView = new DataView(wavBuffer, header.byteLength);
+        for (let i = 0; i < data.length; i++) {
+            dataView.setFloat32(i * 4, data[i], true);
+        }
+
+        return wavBuffer;
+    };
+
+    // 将Float32Array转换为WAV文件
+    const getPurePcm = (audioData) => {
+        const data = new Float32Array(audioData);
+        const wavBuffer = new ArrayBuffer(data.byteLength);
+
+        // 写入音频数据
+        const dataView = new DataView(wavBuffer, 0);
         for (let i = 0; i < data.length; i++) {
             dataView.setFloat32(i * 4, data[i], true);
         }
@@ -152,15 +165,16 @@ const DeepSeekAudioWorkletRecorder = () => {
             formData.append('audio', blob, filename);
 
             // 这里替换为您的后端API地址
-            const response = await fetch('http://127.0.0.1:8000/asr2', {
+            const response = await fetch('http://127.0.0.1:8000/asr4', {
                 method: 'POST',
                 body: formData,
             });
 
             if (response.ok) {
                 message.success('音频文件已成功发送到后端');
-                console.log('音频文件发送成功:', await response.json());
-                return await response.json();
+                const responseJson = await response.json();
+                console.log('音频文件发送成功:', responseJson);
+                return responseJson;
             } else {
                 throw new Error('上传失败');
             }
@@ -170,6 +184,7 @@ const DeepSeekAudioWorkletRecorder = () => {
             throw error;
         }
     };
+
 
     // 下载WAV文件（用于测试）
     const downloadWav = (wavBuffer, filename = 'recording.wav') => {
@@ -228,12 +243,24 @@ const DeepSeekAudioWorkletRecorder = () => {
 
             workletNodeRef.current = new AudioWorkletNode(audioContextRef.current, 'pcm-processor');
 
-            workletNodeRef.current.port.onmessage = (event) => {
+            workletNodeRef.current.port.onmessage = async (event) => {
                 const data = event.data;
                 if (data.type === 'audioBatch') {
+                    console.log('Received audio batch:', data.data.length);
+                    // console.log("类型：", typeof data.data);
+                    console.log("采样率：", data.sampleRate);
+
+                    // 生成WAV文件 // 发送到后端
+                    // const wavBuffer = convertToWav(data.data, data.sampleRate);
+                    // await sendWavToBackend(wavBuffer, `recording_${Date.now()}.wav`);
+
+                    // 纯 pcm 数据
+                    const pcmBuffer = getPurePcm(data.data);
+                    await sendWavToBackend(pcmBuffer, `recording_${Date.now()}.pcm`);
+
                     // 更新ref和state
-                    audioDataRef.current = [...audioDataRef.current, ...data.data];
-                    setAudioData(prev => [...prev, ...data.data]);
+                    // audioDataRef.current = [...audioDataRef.current, ...data.data];
+                    // setAudioData(prev => [...prev, ...data.data]);
                 } else if (data.type === 'volume') {
                     setVolume(data.volume);
                 }
@@ -241,7 +268,7 @@ const DeepSeekAudioWorkletRecorder = () => {
 
             source.connect(workletNodeRef.current);
             workletNodeRef.current.connect(audioContextRef.current.destination);
-            startVisualization();
+            // startVisualization();
 
             return true;
         } catch (err) {
@@ -249,17 +276,6 @@ const DeepSeekAudioWorkletRecorder = () => {
             setError(`初始化音频处理失败: ${err.message}`);
             return false;
         }
-    };
-
-    // 开始可视化
-    const startVisualization = () => {
-        const update = () => {
-            if (isRecording && !isPaused) {
-                recordingDurationRef.current = (Date.now() - recordingStartTimeRef.current) / 1000;
-            }
-            animationFrameRef.current = requestAnimationFrame(update);
-        };
-        animationFrameRef.current = requestAnimationFrame(update);
     };
 
     // 开始录音
@@ -277,19 +293,6 @@ const DeepSeekAudioWorkletRecorder = () => {
         }
     };
 
-    // 暂停/继续录音
-    const togglePause = () => {
-        if (!audioContextRef.current) return;
-
-        if (isPaused) {
-            audioContextRef.current.resume();
-            recordingStartTimeRef.current = Date.now() - (recordingDurationRef.current * 1000);
-        } else {
-            audioContextRef.current.suspend();
-        }
-
-        setIsPaused(!isPaused);
-    };
 
     // 停止录音
     const stopRecording = () => {
@@ -309,13 +312,6 @@ const DeepSeekAudioWorkletRecorder = () => {
 
         setIsRecording(false);
         setIsPaused(false);
-    };
-
-    // 格式化时间
-    const formatTime = (seconds) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
     // 组件卸载时清理
@@ -344,13 +340,6 @@ const DeepSeekAudioWorkletRecorder = () => {
                         disabled={isRecording}
                     >
                         开始录音
-                    </Button>
-
-                    <Button
-                        onClick={togglePause}
-                        disabled={!isRecording}
-                    >
-                        {isPaused ? '继续' : '暂停'}
                     </Button>
 
                     <Button

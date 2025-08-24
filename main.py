@@ -3,15 +3,17 @@ import os
 import shutil
 from contextlib import asynccontextmanager
 from typing import Union
-
+import numpy as np
 import whisper
-from faster_whisper import WhisperModel
+# from faster_whisper import WhisperModel
 from fastapi import FastAPI, UploadFile, Depends, HTTPException, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment
 
 from audio_helper import save_and_convert_to_wave
+import ssl
 
+ssl._create_default_https_context = ssl._create_unverified_context
 # 定义全局变量，用于存储加载的 Whisper 模型
 whisper_model = None
 
@@ -24,7 +26,7 @@ async def lifespan(app: FastAPI):
     global whisper_model
     print("加载 Whisper 模型...")
     # 你可以根据需要选择不同的模型，如 "base", "small", "medium" 等
-    whisper_model = whisper.load_model("base")
+    whisper_model = whisper.load_model("medium.en")
     print("模型加载完成。")
     yield
     # 在应用关闭时可以进行一些清理工作，这里不做特殊处理
@@ -122,10 +124,11 @@ async def asr_endpoint(audio: UploadFile = File(...)):
         # 如果发生任何错误，返回错误信息
         return {"error": f"An error occurred: {e}"}
 
+
 @app.post("/asr3")
 async def asr_endpoint(audio: UploadFile = File(...)):
     """
-    接收 WebM 音频文件并使用 Whisper 进行语音转文字。
+    接收 wav 音频文件并使用 Whisper 进行语音转文字。
     """
     print(f"Received audio file type: {audio.content_type}")
     temp_date_time_name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -136,6 +139,25 @@ async def asr_endpoint(audio: UploadFile = File(...)):
 
     # 返回转录结果
     return {"success": True}
+
+@app.post("/asr4")
+async def asr_endpoint(audio: UploadFile = File(...)):
+    """
+    接收纯AudioWorklet的纯 pcm数据，
+    在AudioWorklet里是float32，归一化的，所以i可以给whisper直接用
+    """
+    try:
+        audio_content = await audio.read()
+        print(f"Received audio file length: {len(audio_content)} bytes")
+
+        audio_np = np.frombuffer(audio_content, dtype=np.float32)
+        # 使用 Whisper 转录音频文件， 返回转录结果
+        result = whisper_model.transcribe(audio_np) # fp16=False 适用于没有GPU的情况
+        return {"transcription": result["text"]}
+        return {"success": True}
+    except Exception as e:
+        # 如果发生任何错误，返回错误信息
+        return {"error": f"An error occurred: {e}"}
 
 
 @app.get("/test")
@@ -149,7 +171,6 @@ def try_wav_file():
     except Exception as e:
         # 如果发生任何错误，返回错误信息
         return {"error": f"An error occurred: {e}"}
-
 
 
 # 方式2：在 Python 文件中添加
