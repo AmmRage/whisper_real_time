@@ -1,17 +1,16 @@
 import datetime
-import os
 import shutil
-from contextlib import asynccontextmanager
-from typing import Union
-import numpy as np
-import whisper
-# from faster_whisper import WhisperModel
-from fastapi import FastAPI, UploadFile, Depends, HTTPException, File, Form
-from fastapi.middleware.cors import CORSMiddleware
-from pydub import AudioSegment
-import torch
-from audio_helper import save_and_convert_to_wave, resample_audio_float32
 import ssl
+from contextlib import asynccontextmanager
+
+import numpy as np
+import torch
+import whisper
+from faster_whisper import WhisperModel
+from fastapi import FastAPI, UploadFile, File, Form, Depends
+from fastapi.middleware.cors import CORSMiddleware
+
+from audio_helper import resample_audio_float32
 
 ssl._create_default_https_context = ssl._create_unverified_context
 # 定义全局变量，用于存储加载的 Whisper 模型
@@ -24,9 +23,16 @@ async def lifespan(app: FastAPI):
     在应用启动时加载 Whisper 模型。
     """
     global whisper_model
-    print("加载 Whisper 模型...")
+
+    # use OpenAI's  Whisper model
+    print("加载 OpenAI Official Whisper 模型...")
     # 你可以根据需要选择不同的模型，如 "base", "small", "medium" 等
-    whisper_model = whisper.load_model("medium.en")
+    # whisper_model = whisper.load_model("medium.en")
+
+    # use faster-whisper's Whisper model
+    print("加载 faster-whisper Whisper 模型...")
+    whisper_model = WhisperModel("medium.en", device="cuda", compute_type="float16")
+
     print("模型加载完成。")
     yield
     # 在应用关闭时可以进行一些清理工作，这里不做特殊处理
@@ -43,12 +49,6 @@ app.add_middleware(
 #
 
 enable_fp16 = torch.cuda.is_available()  # 如果有GPU就用fp16
-
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
 
 @app.post("/asr3")
 async def asr_endpoint(audio: UploadFile = File(...)):
@@ -101,6 +101,36 @@ async def asr_endpoint(audio: UploadFile = File(...),
         # 如果发生任何错误，返回错误信息
         return {"error": f"An error occurred: {e}"}
 
+@app.post("/asr5")
+async def asr_endpoint(audio: UploadFile = File(...),
+    sampleRate: str = Form(None),
+    timestamp: str = Form(None),
+    format: str = Form(None)):
+    """
+    接收纯AudioWorklet的纯 pcm数据，
+    在AudioWorklet里是float32，归一化的，所以i可以给whisper直接用
+    """
+    try:
+        audio_content = await audio.read()
+        print(f"Received audio file length: {len(audio_content)} bytes")
+        print(f"Sample rate: {sampleRate}")
+        print(f"Timestamp: {timestamp}")
+        print(f"Format: {format}")
+
+        # 直接把音频内容转成numpy数组
+        audio_np = np.frombuffer(audio_content, dtype=np.float32)
+        print(f"Audio numpy array shape: {audio_np.shape}, dtype: {audio_np.dtype}")
+        resampled_data_np = resample_audio_float32(audio_np, sr_in=int(sampleRate), sr_out=16000)
+
+        print(f"Resampled audio length: {len(resampled_data_np)} samples")
+
+        # 使用 faster_whisper 转录音频文件， 返回转录结果
+        segments, _ = whisper_model.transcribe(resampled_data_np)
+        text = "".join([seg.text for seg in segments])
+        return {"transcription": text}
+    except Exception as e:
+        # 如果发生任何错误，返回错误信息
+        return {"error": f"An error occurred: {e}"}
 
 # 方式2：在 Python 文件中添加
 if __name__ == "__main__":

@@ -228,7 +228,7 @@ const DeepSeekAudioWorkletRecorder = () => {
             formData.append('format', 'pcm');
 
             // 这里替换为您的后端API地址
-            const response = await fetch('http://127.0.0.1:8000/asr4', {
+            const response = await fetch('http://127.0.0.1:8000/asr5', {
                 method: 'POST',
                 body: formData,
             });
