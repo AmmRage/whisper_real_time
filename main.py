@@ -143,8 +143,8 @@ async def asr_endpoint(audio: UploadFile = File(...)):
         shutil.copyfileobj(audio.file, buffer)
 
     # 使用 Whisper 转录音频文件， 返回转录结果
-    # result = whisper_model.transcribe(temp_file_path, fp16=enable_fp16) # fp16=False 适用于没有GPU的情况
-    # return {"transcription": result["text"]}
+    result = whisper_model.transcribe(temp_file_path, fp16=enable_fp16) # fp16=False 适用于没有GPU的情况
+    return {"transcription": result["text"]}
 
     # 返回转录结果
     return {"success": True}

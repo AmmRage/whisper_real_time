@@ -1,5 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {Button, Card, Typography, Alert, Progress, message} from 'antd';
+import {Button, Card, Typography, Alert, Progress, message, Select} from 'antd';
+import '../DeepSeekAudioWorkletRecorder/Recorder.css';
 
 const {Title, Text} = Typography;
 
@@ -13,6 +14,9 @@ const DeepSeekAudioWorkletRecorder = () => {
 
     const [recordedTime, setRecordedTime] = useState("");
 
+    const [availableDevices, setAvailableDevices] = useState([]);
+    const [selectedDeviceId, setSelectedDeviceId] = useState('');
+
     const audioContextRef = useRef(null);
     const workletNodeRef = useRef(null);
     const recordingStartTimeRef = useRef(0);
@@ -21,13 +25,34 @@ const DeepSeekAudioWorkletRecorder = () => {
     const batchBufferRef = useRef([]);
     const audioDataRef = useRef([]); // 使用ref来避免闭包问题
 
+    const [transcription, setTranscription] = useState("");
+
+    // 获取可用的音频输入设备
+    const getAudioDevices = async () => {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const audioInputDevices = devices.filter(device => device.kind === 'audioinput');
+            setAvailableDevices(audioInputDevices);
+
+            // 设置默认设备
+            if (audioInputDevices.length > 0 && !selectedDeviceId) {
+                setSelectedDeviceId(audioInputDevices[0].deviceId);
+            }
+
+            return audioInputDevices;
+        } catch (error) {
+            console.error('获取音频设备失败:', error);
+            return [];
+        }
+    };
+
     // AudioWorklet处理器代码
     const workletProcessorCode = `
     class PCMProcessor extends AudioWorkletProcessor {
       constructor() {
         super();
         this.batchBuffer = [];
-        this.batchSize = 8;
+        this.batchSize = 1024;
         this.batchCount = 0;
         this.lastVolumeUpdate = 0;
         this.volumeUpdateInterval = 10;
@@ -177,9 +202,44 @@ const DeepSeekAudioWorkletRecorder = () => {
             });
 
             if (response.ok) {
-                message.success('音频文件已成功发送到后端');
+                console.log(`${new Date().toISOString()}: Wav音频已成功发送到后端`);
                 const responseJson = await response.json();
-                console.log('音频文件发送成功:', responseJson);
+                // console.log('音频文件发送成功:', responseJson);
+                return responseJson;
+            } else {
+                throw new Error('上传失败');
+            }
+        } catch (error) {
+            console.error('发送音频文件失败:', error);
+            message.error('发送音频文件失败');
+            throw error;
+        }
+    };
+
+    // 发送WAV文件到后端
+    const sendPcmDataToBackend = async (wavBuffer, sampleRate, filename = 'recording.pcm') => {
+        try {
+            const blob = new Blob([wavBuffer], {type: 'audio/wav'});
+            const formData = new FormData();
+            formData.append('audio', blob, filename);
+
+            formData.append('sampleRate', sampleRate.toString());
+            formData.append('timestamp', Date.now().toString());
+            formData.append('format', 'pcm');
+
+            // 这里替换为您的后端API地址
+            const response = await fetch('http://127.0.0.1:8000/asr4', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                console.log(`${new Date().toISOString()}: Pcm音频已成功发送到后端`);
+                const responseJson = await response.json();
+                // console.log('音频文件发送成功:', responseJson);
+                setTranscription(prevState =>
+                    prevState + responseJson.transcription + " "
+                );
                 return responseJson;
             } else {
                 throw new Error('上传失败');
@@ -234,7 +294,7 @@ const DeepSeekAudioWorkletRecorder = () => {
     };
 
     // 初始化AudioWorklet
-    const initializeAudioWorklet = async () => {
+    const initializeAudioWorklet = async (deviceId = selectedDeviceId) => {
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             audioContextRef.current = new AudioContext();
@@ -244,17 +304,28 @@ const DeepSeekAudioWorkletRecorder = () => {
             const url = URL.createObjectURL(blob);
             await audioContextRef.current.audioWorklet.addModule(url);
 
-            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-            const source = audioContextRef.current.createMediaStreamSource(stream);
+            // 使用指定的设备ID获取音频流
+            const constraints = {
+                audio: deviceId ? {deviceId: {exact: deviceId}} : true
+            };
 
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            // const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+            // 获取当前使用的设备信息
+            const audioTrack = stream.getAudioTracks()[0];
+            console.log('当前使用的麦克风:', audioTrack.label);
+            console.log('设备ID:', audioTrack.getSettings().deviceId);
+
+
+            const source = audioContextRef.current.createMediaStreamSource(stream);
             workletNodeRef.current = new AudioWorkletNode(audioContextRef.current, 'pcm-processor');
 
             workletNodeRef.current.port.onmessage = async (event) => {
                 const data = event.data;
                 if (data.type === 'audioBatch') {
-                    console.log('Received audio batch:', data.data.length);
+                    // console.log('Received audio batch:', data.data.length);
                     // console.log("类型：", typeof data.data);
-                    console.log("采样率：", data.sampleRate);
+                    // console.log("采样率：", data.sampleRate);
 
                     //
                     const recordedSeconds = data.data.length / data.sampleRate;
@@ -268,13 +339,12 @@ const DeepSeekAudioWorkletRecorder = () => {
                     // await sendAudioDataToBackend(wavBuffer, data.sampleRate, `recording_${Date.now()}.wav`);
 
                     // 纯 pcm 数据
-                    // const pcmBuffer = getPurePcm(data.data);
-                    // await sendAudioDataToBackend(pcmBuffer, data.sampleRate, `recording_${Date.now()}.pcm`);
-
+                    const pcmBuffer = getPurePcm(data.data);
+                    await sendPcmDataToBackend(pcmBuffer, data.sampleRate, `recording_${Date.now()}.pcm`);
 
                     // 更新ref和state
-                    audioDataRef.current = [...audioDataRef.current, ...data.data];
-                    setAudioData(prev => [...prev, ...data.data]);
+                    // audioDataRef.current = [...audioDataRef.current, ...data.data];
+                    // setAudioData(prev => [...prev, ...data.data]);
                 } else if (data.type === 'volume') {
                     setVolume(data.volume);
                 }
@@ -294,6 +364,8 @@ const DeepSeekAudioWorkletRecorder = () => {
 
     // 开始录音
     const startRecording = async () => {
+
+        setTranscription("");
         setError(null);
         setAudioData([]);
         audioDataRef.current = [];
@@ -306,7 +378,6 @@ const DeepSeekAudioWorkletRecorder = () => {
             setIsPaused(false);
         }
     };
-
 
     // 停止录音
     const stopRecording = () => {
@@ -340,12 +411,48 @@ const DeepSeekAudioWorkletRecorder = () => {
         };
     }, []);
 
+    useEffect(() => {
+        getAudioDevices();
+    }, []);
+
     return (
         <div style={{maxWidth: 800, margin: '0 auto', padding: 24}}>
             <Title level={2}>AudioWorklet WAV录音器</Title>
-
+            {/*// 在UI中添加设备选择器*/}
+            <div style={{marginBottom: 16}}>
+                <Text>选择麦克风: </Text>
+                <Select
+                    style={{width: 500, marginLeft: 8}}
+                    value={selectedDeviceId}
+                    onChange={setSelectedDeviceId}
+                    disabled={isRecording}
+                >
+                    {availableDevices.map(device => (
+                        <Select.Option key={device.deviceId} value={device.deviceId}>
+                            {device.label || `麦克风 ${device.deviceId.substr(0, 8)}...`}
+                        </Select.Option>
+                    ))}
+                </Select>
+            </div>
             <Card style={{marginBottom: 24}}>
                 {/* ... UI代码保持不变 ... */}
+
+                <div className="recorder-container">
+                    <Button
+                        className="record-button"
+                        type="primary"
+                        shape="circle"
+                        size="large"
+                        onMouseDown={startRecording}
+                        onMouseUp={stopRecording}
+                        onTouchStart={startRecording}
+                        onTouchEnd={stopRecording}
+                    >
+                        <span className="button-text">
+                          {isRecording ? '录音中...' : '按住说话'}
+                        </span>
+                    </Button>
+                </div>
 
                 <div style={{display: 'flex', gap: 8, marginBottom: 16}}>
                     <Button
@@ -364,13 +471,13 @@ const DeepSeekAudioWorkletRecorder = () => {
                         停止
                     </Button>
 
-                    <Button
-                        type="default"
-                        onClick={saveAndSendRecording}
-                        disabled={isRecording || audioData.length === 0}
-                    >
-                        保存并发送
-                    </Button>
+                    {/*<Button*/}
+                    {/*    type="default"*/}
+                    {/*    onClick={saveAndSendRecording}*/}
+                    {/*    disabled={isRecording || audioData.length === 0}*/}
+                    {/*>*/}
+                    {/*    保存并发送*/}
+                    {/*</Button>*/}
                 </div>
 
                 {error && (
@@ -380,31 +487,35 @@ const DeepSeekAudioWorkletRecorder = () => {
 
             <Card title="录音数据">
                 <Text>已收集 {audioData.length} 个样本</Text>
-                <br />
+                <br/>
                 <Text>采样率: {sampleRate} Hz</Text>
-                <br />
+                <br/>
                 <Text strong>录制时长: {recordedTime}</Text>
-
-                {audioData.length > 0 && (
-                    <div style={{marginTop: 16}}>
-                        <Text strong>前10个样本: </Text>
-                        <div style={{
-                            background: '#f0f0f0',
-                            padding: 12,
-                            borderRadius: 6,
-                            marginTop: 8,
-                            maxHeight: 120,
-                            overflow: 'auto'
-                        }}>
-                            {audioData.slice(0, 10).map((value, index) => (
-                                <span key={index} style={{marginRight: 8}}>
-                  {value.toFixed(6)}
-                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                {/*{audioData.length > 0 && (*/}
+                {/*    <div style={{marginTop: 16}}>*/}
+                {/*        <Text strong>前10个样本: </Text>*/}
+                {/*        <div style={{*/}
+                {/*            background: '#f0f0f0',*/}
+                {/*            padding: 12,*/}
+                {/*            borderRadius: 6,*/}
+                {/*            marginTop: 8,*/}
+                {/*            maxHeight: 120,*/}
+                {/*            overflow: 'auto'*/}
+                {/*        }}>*/}
+                {/*            {audioData.slice(0, 10).map((value, index) => (*/}
+                {/*                <span key={index} style={{marginRight: 8}}>*/}
+                {/*  {value.toFixed(6)}*/}
+                {/*</span>*/}
+                {/*            ))}*/}
+                {/*        </div>*/}
+                {/*    </div>*/}
+                {/*)}*/}
             </Card>
+
+            <Card title={"结果"}>
+                <Text strong>{transcription}</Text>
+            </Card>
+
         </div>
     );
 };
