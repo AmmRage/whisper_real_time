@@ -57,4 +57,8 @@ subsequently, add a dropdown to select the input source.
 
 after fix some small bugs, it works.
 
+## TODO
 
+- [ ] mobile test
+- [ ] decrease the record time make it more `realtime`
+- [ ] add window in backend
